@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        *{
+            box-sizing: border-box;
+        }
+
+        body{
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        #scene{
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #background{
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        #temperaturelayer{
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+            background: hsl(200,70%,75%);
+            opacity: 0;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        #sun{
+            position: absolute;
+            width: 170px;
+            right: 5vw;
+            top: 5vh;
+            z-index: 4;
+            cursor: pointer;
+            transition: transform 0.2s ease, filter 0.2s ease;
+            transform-origin: center center;
+        }
+
+        #moon{
+            position: absolute;
+            width: 170px;
+            right: 5vw;
+            top: 5vh;
+            z-index: 4;
+            display: none;
+            cursor: pointer;
+            transition: transform 0.2s ease, filter 0.2s ease;
+            transform-origin: center center;
+        }
+
+        #sun:hover,
+        #moon:hover{
+            transform: scale(1.13);
+            filter: drop-shadow(0 0 14px rgba(255,255,255,0.5));
+        }
+
+        #bed{
+            position: absolute;
+            width: 350px;
+            left: 68%;
+            bottom: 5vh;
+            transform: translateX(-50%);
+            z-index: 5;
+            transition: filter 0.2s ease;
+        }
+
+        #cat{
+            position: absolute;
+            width: 330px;
+            left: 52%;
+            bottom: 7vh;
+            transform: translateX(-50%);
+            z-index: 8;
+            cursor: pointer;
+        }
+
+        #toy{
+            position: absolute;
+            width: 88px;
+            left: 61.5%;
+            bottom: 36vh;
+            z-index: 9;
+            display: none;
+        }
+
+        #hearts{
+            position: absolute;
+            left: 52%;
+            bottom: 48vh;
+            transform: translateX(-50%);
+            z-index: 10;
+            font-size: 42px;
+            color: #ff7fa6;
+            display: none;
+        }
+
+        #catname{
+            position: absolute;
+            left: 52%;
+            top: 7vh;
+            transform: translateX(-50%);
+            z-index: 10;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            text-shadow: 0 3px 8px rgba(0,0,0,0.3);
+        }
+
+        #panel{
+            position: absolute;
+            left: 4vw;
+            top: 5vh;
+            width: 340px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 26px;
+            background: rgba(255,255,255,0.90);
+            border-radius: 25px;
+            z-index: 20;
+            backdrop-filter: blur(10px);
+        }
+
+        #panel::-webkit-scrollbar{
+            width: 12px;
+        }
+
+        #panel::-webkit-scrollbar-track{
+            background: transparent;
+            margin-top: 35px;
+            margin-bottom: 35px;
+        }
+
+        #panel::-webkit-scrollbar-thumb{
+            background: #8b8b8b;
+            border-radius: 20px;
+            border: 3px solid transparent;
+            background-clip: padding-box;
+        }
+
+        h1{
+            margin: 0;
+            font-size: 34px;
+            line-height: 1;
+        }
+
+        #subtitle{
+            font-size: 13px;
+            opacity: 0.6;
+            margin-top: 8px;
+            margin-bottom: 25px;
+        }
+
+        .control{
+            margin-bottom: 20px;
+        }
+
+        .labelrow{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 9px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        input[type="range"]{
+            width: 100%;
+        }
+
+        input[type="text"]{
+            width: 100%;
+            height: 38px;
+            padding: 0 12px;
+            border-radius: 10px;
+            border: 1px solid #cccccc;
+            font-size: 14px;
+        }
+
+        .buttons{
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        button{
+            border: 0;
+            height: 38px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .buttons button{
+            flex: 1;
+        }
+
+        #feed{
+            background: #ffd2ac;
+        }
+
+        #treat{
+            background: #fff0a8;
+        }
+
+        #pet{
+            background: #ffcce0;
+        }
+
+        #toybutton{
+            background: #e9c9ff;
+        }
+
+        #daybutton{
+            background: #c9e5ff;
+        }
+
+        #nightbutton{
+            background: #cbc6ff;
+        }
+
+        #resetbutton{
+            width: 100%;
+            background: #eeeeee;
+            margin-top: 2px;
+        }
+
+        #catstatus{
+            text-align: center;
+            font-size: 13px;
+            opacity: 0.65;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+<div id="scene">
+    <img id="background" src="daybackground.jpg">
+    <div id="temperaturelayer"></div>
+
+    <img id="sun" src="sun.jpg">
+    <img id="moon" src="moon.jpg">
+
+    <div id="catname">MIMI</div>
+    <div id="hearts">♥ ♥ ♥</div>
+
+    <img id="bed" src="bed.jpg">
+    <img id="cat" src="cute.jpg">
+    <img id="toy" src="boll.jpg">
+
+    <audio id="daysound" src="daybackgorundsound.mp3" loop autoplay></audio>
+    <audio id="nightsound" src="nightsound.mp3" loop></audio>
+    <audio id="sleepsound" src="sleppy02sound.mp3"></audio>
+    <audio id="feedsound" src="feed.mp3"></audio>
+    <audio id="eatingsound" src="eating.mp3"></audio>
+    <audio id="petmesound" src="petme.mp3"></audio>
+
+    <div id="panel">
+        <h1>CAT MODE</h1>
+
+        <div id="subtitle">
+            Take care of your tiny cat.
+        </div>
+
+        <div class="control">
+            <div class="labelrow">
+                <span>Name Your Cat</span>
+            </div>
+
+            <input type="text" id="nameinput" value="MIMI">
+        </div>
+
+        <div class="control">
+            <div class="labelrow">
+                <span>Hunger</span>
+                <span id="hungerValue">30%</span>
+            </div>
+
+            <input
+                type="range"
+                id="hunger"
+                min="0"
+                max="100"
+                value="30">
+        </div>
+
+        <div class="buttons">
+            <button id="feed">FEED</button>
+            <button id="treat">TREAT</button>
+        </div>
+
+        <div class="control">
+            <div class="labelrow">
+                <span>Temperature</span>
+                <span id="temperatureValue">50%</span>
+            </div>
+
+            <input
+                type="range"
+                id="temperature"
+                min="0"
+                max="100"
+                value="50">
+        </div>
+
+        <div class="buttons">
+            <button id="pet">PET ME</button>
+            <button id="toybutton">TOY</button>
+        </div>
+
+        <div class="control">
+            <div class="labelrow">
+                <span>Bed Hue</span>
+                <span id="bedHueValue">0</span>
+            </div>
+
+            <input
+                type="range"
+                id="bedhue"
+                min="0"
+                max="360"
+                value="0">
+        </div>
+
+        <div class="control">
+            <div class="labelrow">
+                <span>Bed Saturation</span>
+                <span id="bedSatValue">100%</span>
+            </div>
+
+            <input
+                type="range"
+                id="bedsat"
+                min="0"
+                max="250"
+                value="100">
+        </div>
+
+        <div class="control">
+            <div class="labelrow">
+                <span>Bed Brightness</span>
+                <span id="bedBrightValue">100%</span>
+            </div>
+
+            <input
+                type="range"
+                id="bedbright"
+                min="50"
+                max="150"
+                value="100">
+        </div>
+
+        <div class="buttons">
+            <button id="daybutton">DAY</button>
+            <button id="nightbutton">NIGHT</button>
+        </div>
+
+        <button id="resetbutton">
+            RESET CAT
+        </button>
+
+        <div id="catstatus">
+            MIMI is feeling good.
+        </div>
+    </div>
+</div>
+
+<script>
+var nightMode = false;
+var timer1;
+var timer2;
+var ambientUnlocked = false;
+
+daysound.volume = 0.18;
+nightsound.volume = 0.18;
+sleepsound.volume = 0.6;
+feedsound.volume = 0.75;
+eatingsound.volume = 0.32;
+petmesound.volume = 0.75;
+
+function tryStartDayMusic(){
+    daysound.currentTime = 0;
+
+    var playPromise = daysound.play();
+
+    if(playPromise !== undefined){
+        playPromise.then(function(){
+            ambientUnlocked = true;
+        }).catch(function(){
+            ambientUnlocked = false;
+        });
+    }
+}
+
+window.onload = function(){
+    tryStartDayMusic();
+}
+
+function unlockAmbient(){
+    if(ambientUnlocked == false){
+        if(nightMode == false){
+            daysound.play();
+        }
+
+        if(nightMode == true){
+            nightsound.play();
+        }
+
+        ambientUnlocked = true;
+    }
+}
+
+document.addEventListener("click", unlockAmbient, {once:true});
+document.addEventListener("touchstart", unlockAmbient, {once:true});
+document.addEventListener("keydown", unlockAmbient, {once:true});
+
+function normalCatPosition(){
+    cat.style.width = "330px";
+    cat.style.left = "52%";
+    cat.style.bottom = "7vh";
+}
+
+function sleepingCatPosition(){
+    cat.style.width = "300px";
+    cat.style.left = "68%";
+    cat.style.bottom = "8vh";
+}
+
+function stopEffectSounds(){
+    feedsound.pause();
+    feedsound.currentTime = 0;
+
+    eatingsound.pause();
+    eatingsound.currentTime = 0;
+
+    petmesound.pause();
+    petmesound.currentTime = 0;
+
+    sleepsound.pause();
+    sleepsound.currentTime = 0;
+}
+
+function clearTimers(){
+    clearTimeout(timer1);
+    clearTimeout(timer2);
+}
+
+function startAmbient(){
+    unlockAmbient();
+
+    if(nightMode == false){
+        nightsound.pause();
+
+        if(daysound.paused){
+            daysound.play();
+        }
+    }
+
+    if(nightMode == true){
+        daysound.pause();
+
+        if(nightsound.paused){
+            nightsound.play();
+        }
+    }
+}
+
+nameinput.oninput = function(){
+    startAmbient();
+    catname.innerHTML = nameinput.value;
+}
+
+hunger.oninput = function(){
+    startAmbient();
+    clearTimers();
+    stopEffectSounds();
+
+    hungerValue.innerHTML = hunger.value + "%";
+
+    normalCatPosition();
+
+    toy.style.display = "none";
+    hearts.style.display = "none";
+
+    if(hunger.value < 35){
+        cat.src = "petme.jpg";
+        catstatus.innerHTML = nameinput.value + " is full.";
+    }
+
+    if(hunger.value >= 35 && hunger.value < 70){
+        cat.src = "cute.jpg";
+        catstatus.innerHTML = nameinput.value + " is getting hungry.";
+    }
+
+    if(hunger.value >= 70){
+        cat.src = "shokedfor sercle.jpg";
+        catstatus.innerHTML = nameinput.value + " is very hungry!";
+    }
+}
+
+feed.onclick = function(){
+    startAmbient();
+    clearTimers();
+    stopEffectSounds();
+
+    normalCatPosition();
+
+    toy.style.display = "none";
+    hearts.style.display = "none";
+
+    cat.src = "feed.jpg";
+
+    feedsound.currentTime = 0;
+    feedsound.play();
+
+    hunger.value = 0;
+    hungerValue.innerHTML = "0%";
+
+    catstatus.innerHTML = nameinput.value + " is getting food...";
+
+    timer1 = setTimeout(function(){
+        feedsound.pause();
+        feedsound.currentTime = 0;
+
+        cat.src = "petme.jpg";
+
+        catstatus.innerHTML = nameinput.value + " is full and happy.";
+    }, 3000);
+}
+
+treat.onclick = function(){
+    startAmbient();
+    clearTimers();
+    stopEffectSounds();
+
+    normalCatPosition();
+
+    toy.style.display = "none";
+    hearts.style.display = "none";
+
+    cat.src = "eating.jpg";
+
+    eatingsound.currentTime = 0;
+    eatingsound.play();
+
+    hunger.value = 0;
+    hungerValue.innerHTML = "0%";
+
+    catstatus.innerHTML = nameinput.value + " is eating a treat...";
+
+    timer1 = setTimeout(function(){
+        eatingsound.pause();
+        eatingsound.currentTime = 0;
+
+        cat.src = "petme.jpg";
+
+        hearts.style.display = "block";
+
+        catstatus.innerHTML = nameinput.value + " loves the treat!";
+    }, 6000);
+}
+
+temperature.oninput = function(){
+    startAmbient();
+    clearTimers();
+    stopEffectSounds();
+
+    temperatureValue.innerHTML = temperature.value + "%";
+
+    normalCatPosition();
+
+    temperaturelayer.style.background =
+        "hsl(" +
+        (220 - temperature.value * 1.8) +
+        ",70%,70%)";
+
+    temperaturelayer.style.opacity = 0.18;
+
+    toy.style.display = "none";
+    hearts.style.display = "none";
+
+    if(temperature.value < 30){
+        cat.src = "sleepy.jpg";
+        catstatus.innerHTML = nameinput.value + " feels cold.";
+    }
+
+    if(temperature.value >= 30 && temperature.value < 70){
+        cat.src = "cute.jpg";
+        catstatus.innerHTML = nameinput.value + " feels comfortable.";
+    }
+
+    if(temperature.value >= 70){
+        cat.src = "petme.jpg";
+        catstatus.innerHTML = nameinput.value + " feels warm.";
+    }
+}
+
+pet.onclick = function(){
+    startAmbient();
+    clearTimers();
+    stopEffectSounds();
+
+    normalCatPosition();
+
+    cat.src = "petme.jpg";
+
+    toy.style.display = "none";
+    hearts.style.display = "block";
+
+    petmesound.currentTime = 0;
+    petmesound.play();
+
+    catstatus.innerHTML =
+        "Purr... " +
+        nameinput.value +
+        " loves you.";
+
+    timer1 = setTimeout(function(){
+        hearts.style.display = "none";
+        cat.src = "cute.jpg";
+    }, 1600);
+}
+
+cat.onclick = function(){
+    startAmbient();
+    clearTimers();
+    stopEffectSounds();
+
+    normalCatPosition();
+
+    cat.src = "petme.jpg";
+
+    toy.style.display = "none";
+    hearts.style.display = "block";
+
+    petmesound.currentTime = 0;
+    petmesound.play();
+
+    catstatus.innerHTML = "Purr...";
+
+    timer1 = setTimeout(function(){
+        hearts.style.display = "none";
+        cat.src = "cute.jpg";
+    }, 1600);
+}
+
+toybutton.onclick = function(){
+    startAmbient();
+    clearTimers();
+    stopEffectSounds();
+
+    normalCatPosition();
+
+    toy.style.display = "none";
+    hearts.style.display = "none";
+
+    cat.src = "shokedfor sercle.jpg";
+
+    catstatus.innerHTML = nameinput.value + " noticed something!";
+
+    timer1 = setTimeout(function(){
+        toy.style.display = "block";
+        cat.src = "playing.jpg";
+        catstatus.innerHTML = nameinput.value + " is playing!";
+    }, 700);
+
+    timer2 = setTimeout(function(){
+        toy.style.display = "none";
+        cat.src = "cute.jpg";
+        catstatus.innerHTML = nameinput.value + " is ready to play again.";
+    }, 3200);
+}
+
+bedhue.oninput = function(){
+    startAmbient();
+
+    bedHueValue.innerHTML = bedhue.value;
+
+    bed.style.filter =
+        "hue-rotate(" +
+        bedhue.value +
+        "deg) saturate(" +
+        bedsat.value +
+        "%) brightness(" +
+        bedbright.value +
+        "%)";
+}
+
+bedsat.oninput = function(){
+    startAmbient();
+
+    bedSatValue.innerHTML = bedsat.value + "%";
+
+    bed.style.filter =
+        "hue-rotate(" +
+        bedhue.value +
+        "deg) saturate(" +
+        bedsat.value +
+        "%) brightness(" +
+        bedbright.value +
+        "%)";
+}
+
+bedbright.oninput = function(){
+    startAmbient();
+
+    bedBrightValue.innerHTML = bedbright.value + "%";
+
+    bed.style.filter =
+        "hue-rotate(" +
+        bedhue.value +
+        "deg) saturate(" +
+        bedsat.value +
+        "%) brightness(" +
+        bedbright.value +
+        "%)";
+}
+
+function setDay(){
+    nightMode = false;
+
+    clearTimers();
+    stopEffectSounds();
+
+    background.src = "daybackground.jpg";
+
+    sun.style.display = "block";
+    moon.style.display = "none";
+
+    cat.src = "cute.jpg";
+
+    normalCatPosition();
+
+    toy.style.display = "none";
+    hearts.style.display = "none";
+
+    nightsound.pause();
+    nightsound.currentTime = 0;
+
+    daysound.currentTime = 0;
+    daysound.play();
+
+    catstatus.innerHTML =
+        "Good morning, " +
+        nameinput.value +
+        "!";
+}
+
+function setNight(){
+    nightMode = true;
+
+    clearTimers();
+    stopEffectSounds();
+
+    background.src = "nightbackground.jpg";
+
+    sun.style.display = "none";
+    moon.style.display = "block";
+
+    cat.src = "sleppy2.jpg";
+
+    sleepingCatPosition();
+
+    toy.style.display = "none";
+    hearts.style.display = "none";
+
+    daysound.pause();
+    daysound.currentTime = 0;
+
+    nightsound.currentTime = 0;
+    nightsound.play();
+
+    sleepsound.currentTime = 0;
+    sleepsound.play();
+
+    catstatus.innerHTML =
+        "Good night, " +
+        nameinput.value +
+        ".";
+}
+
+daybutton.onclick = function(){
+    setDay();
+}
+
+nightbutton.onclick = function(){
+    setNight();
+}
+
+sun.onclick = function(){
+    setNight();
+}
+
+moon.onclick = function(){
+    setDay();
+}
+
+resetbutton.onclick = function(){
+    nightMode = false;
+
+    clearTimers();
+    stopEffectSounds();
+
+    background.src = "daybackground.jpg";
+
+    sun.style.display = "block";
+    moon.style.display = "none";
+
+    cat.src = "cute.jpg";
+
+    normalCatPosition();
+
+    toy.style.display = "none";
+    hearts.style.display = "none";
+
+    hunger.value = 30;
+    hungerValue.innerHTML = "30%";
+
+    temperature.value = 50;
+    temperatureValue.innerHTML = "50%";
+
+    temperaturelayer.style.opacity = 0;
+
+    bedhue.value = 0;
+    bedHueValue.innerHTML = "0";
+
+    bedsat.value = 100;
+    bedSatValue.innerHTML = "100%";
+
+    bedbright.value = 100;
+    bedBrightValue.innerHTML = "100%";
+
+    bed.style.filter =
+        "hue-rotate(0deg) saturate(100%) brightness(100%)";
+
+    nightsound.pause();
+    nightsound.currentTime = 0;
+
+    daysound.currentTime = 0;
+    daysound.play();
+
+    catstatus.innerHTML =
+        nameinput.value +
+        " is feeling good.";
+}
+</script>
+</body>
+</html>
